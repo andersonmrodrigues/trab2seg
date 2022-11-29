@@ -8,12 +8,16 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.crypto.NoSuchPaddingException;
+
 public class Server {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException {
         try {
             int port = 8088;
 
@@ -66,6 +70,7 @@ public class Server {
 
             System.out.println("Chave Secreta para Criptografar/Descriptogravar = "
                     + Bdash);
+          
             server.close();
         } catch (SocketTimeoutException s) {
             System.out.println("Socket timed out!");

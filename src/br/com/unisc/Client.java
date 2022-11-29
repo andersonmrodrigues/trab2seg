@@ -8,6 +8,10 @@ import java.net.Socket;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 public class Client {
     public static void main(String[] args) {
         try {
@@ -26,42 +30,42 @@ public class Client {
             System.out.println("Informe o número de bits (64, 128 e 256)");
             Integer keySize = sc.nextInt();
 
-            keyA = new BigInteger(keySize, new Random());
-
-            // Established the connection
+            
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            keyGenerator.init(keySize);
+            SecretKey chaveSecreta = keyGenerator.generateKey();
+            
+            byte[] dataInBytes = "teste".getBytes();
+            Cipher encryptionCipher = Cipher.getInstance("AES/GCM/NoPadding");
+            encryptionCipher.init(Cipher.ENCRYPT_MODE, chaveSecreta);
+            byte[] encryptedBytes = encryptionCipher.doFinal(dataInBytes);
+          
+            System.out.println("Chave Secreta para Criptografar/Descriptogravar = "
+                    + chaveSecreta.toString());
+            
+            System.out.println("mensagem criptografada = "
+                    + encryptedBytes.toString());
+            
             System.out.println("Conectando a " + serverName
-                    + " on port na porta" + port);
+                    + " na porta" + port);
             Socket client = new Socket(serverName, port);
             System.out.println("Conectado a "
                     + client.getRemoteSocketAddress());
 
-            // Sends the data to client
+            // Enviar dados para o cliente
             OutputStream outToServer = client.getOutputStream();
             DataOutputStream out = new DataOutputStream(outToServer);
+            out.writeUTF(encryptedBytes.toString());
+            out.writeUTF(chaveSecreta.toString());           
 
-            pstr = p.toString();
-            out.writeUTF(pstr); // Sending p
 
-            gstr = g.toString();
-            out.writeUTF(gstr); // Sending g
-
-            BigInteger A = g.modPow(keyA, p);
-            Astr = A.toString();
-            out.writeUTF(Astr); // Sending A
-
-            // Client's Private Key
-            System.out.println("Cliente : Private Key = " + keyA);
-
-            // Accepts the data
+            // Aceita mensagem servidor
             DataInputStream in = new DataInputStream(client.getInputStream());
 
             serverB = BigInteger.valueOf(Long.parseLong(in.readUTF()));
             System.out.println("Servidor : Public Key = " + serverB);
 
-            Adash = serverB.modPow(keyA, p);
 
-            System.out.println("Chave Secreta para Criptografar/Descriptogravar = "
-                    + Adash);
             client.close();
         } catch (Exception e) {
             e.printStackTrace();
