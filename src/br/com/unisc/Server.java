@@ -1,5 +1,8 @@
 package br.com.unisc;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,6 +11,8 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -66,10 +71,21 @@ public class Server {
 
             System.out.println("Chave Secreta para Criptografar/Descriptogravar = "
                     + Bdash);
+
+            String encryptedString = in.readUTF();
+
+            byte[] decodedKey = Bdash.toByteArray();
+            Cipher cipher = Cipher.getInstance("AES");
+            SecretKey originalKey = new SecretKeySpec(Arrays.copyOf(decodedKey, 16), "AES");
+            System.out.println("Chave AES Gerada: " + Base64.getEncoder().encodeToString(originalKey.getEncoded()));
+            cipher.init(Cipher.DECRYPT_MODE, originalKey);
+            byte[] cipherText = cipher.doFinal(Base64.getDecoder().decode(encryptedString));
+            String decrpted = new String(cipherText);
+            System.out.println("Mensagem recebida: " + encryptedString);
+            System.out.println("Mensagem descriptografada: " + decrpted);
             server.close();
-        } catch (SocketTimeoutException s) {
+        } catch (Exception s) {
             System.out.println("Socket timed out!");
-        } catch (IOException e) {
         }
     }
 }
